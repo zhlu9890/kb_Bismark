@@ -80,38 +80,45 @@ eval {
   can_ok($impl, qw/genome_preparation bismark methylation_extractor bismark_app run_bismark_cli/);
   my ($assembly_ref, $se_lib_ref, $params, $res);
 
-  $assembly_ref = loadAssembly();
-  $res=$impl->genome_preparation({ref => $assembly_ref});
+  lives_ok {
+    $assembly_ref = loadAssembly();
+    $res=$impl->genome_preparation({ref => $assembly_ref});
+  }, 'genome_preparation'; 
   diag explain $res;
   cmp_ok($res->{from_cache}, '==', 0);
   cmp_ok($res->{pushed_to_cache}, '==', 0);
   cmp_ok($res->{index_files_basename}, 'eq', 'test_assembly');
 
-  $assembly_ref = loadAssembly();
-  $res=$impl->genome_preparation({ref => $assembly_ref, ws_for_cache => get_ws_name()});
+  lives_ok {
+    $assembly_ref = loadAssembly();
+    $res=$impl->genome_preparation({ref => $assembly_ref, ws_for_cache => get_ws_name()});
+  }, 'genome_preparation with ws_for_cache';
   diag explain $res;
   cmp_ok($res->{from_cache}, '==', 0);
   cmp_ok($res->{pushed_to_cache}, '==', 1);
   cmp_ok($res->{index_files_basename}, 'eq', 'test_assembly');
 
-  $assembly_ref = loadAssembly();
-  $res=$impl->genome_preparation({ref => $assembly_ref});
+  lives_ok {
+    $assembly_ref = loadAssembly();
+    $res=$impl->genome_preparation({ref => $assembly_ref});
+  }, 'genome_preparation';
   diag explain $res;
   cmp_ok($res->{from_cache}, '==', 1);
   cmp_ok($res->{pushed_to_cache}, '==', 0);
   cmp_ok($res->{index_files_basename}, 'eq', 'test_assembly');
 
-  $assembly_ref = loadAssembly();
-  $se_lib_ref = loadSingleEndReads();
   $params={
     input_ref => $se_lib_ref,
     assembly_or_genome_ref => $assembly_ref,
     output_obj_name_suffix => 'readsAlignment1',
     output_workspace => get_ws_name(),
   };
-  Dumper($params);
-  $res = $impl->bismark($params);
-  Dumper($res);
+  lives_ok {
+    $assembly_ref = loadAssembly();
+    $se_lib_ref = loadSingleEndReads();
+    $res = $impl->bismark($params);
+  }, 'bismark';
+  diag explain $res;
   
   done_testing();
 };
