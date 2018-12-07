@@ -1,0 +1,78 @@
+#
+# define display information
+#
+name: Bismark v0.20.0
+
+tooltip: |
+    Bismark is a program to map bisulfite treated sequencing reads to a genome of interest and perform methylation calls in a single step
+
+screenshots: []
+
+icon: icon.png
+
+#
+# define a set of similar methods that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            []
+        next:
+            []
+    methods:
+        related:
+            []
+        next:
+            []
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    input_ref :
+        ui-name : |
+            Read Library
+        short-hint : |
+            Select the ReadsSet or Read Library.
+    assembly_or_genome_ref :
+        ui-name : |
+            Assembly or Genome
+        short-hint : |
+            Select the assembly or genome on which to align to.
+    lib_type :
+        ui-name : |
+            Sequencing library type
+        short-hint : |
+            Select how the sequencing library was constructed, directional is used by default.
+    mismatch :
+        ui-name : |
+            Maximum mismatch allowed in a seed alignment
+        short-hint : |
+            Select maximum mismatch allowed in a seed alignment during multiseed alignment, 0 is used by default.
+    length  :
+        ui-name : |
+            Length of seed substring
+        short-hint : |
+            Length of seed substring, >3 and <32, 22 is used by default.
+    qual :
+        ui-name : |
+            Quality score type
+        short-hint : |
+            Type of quality score: phred33 or phred64, phred33 is used by default.
+    minins :
+        ui-name : |
+            Minimum Fragment Length For Paired-end Alignments
+        short-hint : |
+          Select the minimum fragment length for valid untrimmed paired-end alignments, 0 is used by default.
+    maxins :
+        ui-name : |
+            Maximum Fragment Length For Paired-end Alignments
+        short-hint : |
+          Select the maximum fragment length for valid untrimmed paired-end alignments, 500 is used by default.
+description : |
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed pulvinar efficitur felis, quis tincidunt sem congue at. Vivamus ornare feugiat faucibus. Fusce tincidunt mattis nunc, nec varius purus convallis quis. Nulla facilisi. In at magna dolor. Suspendisse sit amet felis at arcu auctor dapibus vitae pharetra dui. Nam semper mi quis tortor fermentum mollis. Donec a arcu pharetra, rutrum dolor vitae, rutrum mauris. Donec ornare fringilla sagittis. Nam laoreet est in elementum malesuada. Vestibulum id mi eget urna hendrerit feugiat. Donec et ultrices nulla. Phasellus diam eros, dapibus at tempus nec, semper vel ante.</p>
+publications :
+    -
+        display-text: |
+            Krueger F, Andrews SR. Bismark: a flexible aligner and methylation caller for Bisulfite-Seq applications. Bioinformatics. 2011 Jun 1;27(11):1571-2. doi: 10.1093/bioinformatics/btr167
+        link: https://academic.oup.com/bioinformatics/article-lookup/doi/10.1093/bioinformatics/btr167

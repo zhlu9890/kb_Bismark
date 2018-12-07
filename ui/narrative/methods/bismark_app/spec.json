@@ -1,0 +1,209 @@
+{
+    "ver": "1.0.0",
+    "authors": [
+        "luj"
+    ],
+    "contact": "help@kbase.us",
+    "categories": ["active", "sequence"],
+    "widgets": {
+        "input": null,
+        "output": "no-display"
+    },
+    "parameters": [
+        {
+            "id": "input_ref",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": [ "KBaseSets.ReadsSet", "KBaseAssembly.SingleEndLibrary", "KBaseAssembly.PairedEndLibrary", "KBaseFile.SingleEndLibrary", "KBaseFile.PairedEndLibrary" ]
+            }
+        },
+        {
+            "id": "assembly_or_genome_ref",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": [ "KBaseGenomes.Genome", "KBaseGenomeAnnotations.Assembly", "KBaseGenomes.ContigSet" ]
+            }
+        },
+        {
+            "id": "lib_type",
+            "optional": true,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "directional" ],
+            "field_type": "dropdown",
+            "dropdown_options": {
+              "options": [
+                {
+                  "value": "directional",
+                  "display": "directional",
+                  "id": "lib_type_directional",
+                  "ui_name": "lib_type_directional"
+                },
+                {
+                  "value": "non_directional",
+                  "display": "non_directional",
+                  "id": "lib_type_non_directional",
+                  "ui_name": "lib_type_non_directional"
+                },
+                {
+                  "value": "pbat",
+                  "display": "pbat",
+                  "id": "lib_type_pbat",
+                  "ui_name": "lib_type_pbat"
+                }
+              ]
+            }
+        },
+        {
+          "id": "mismatch",
+          "optional": true,
+          "advanced": true,
+          "allow_multiple": false,
+          "default_values": [ 0 ],
+          "field_type": "dropdown",
+          "dropdown_options": {
+            "options": [
+              {
+                "value": 0,
+                "display": 0,
+                "id": "mismatch_0",
+                "ui_name": "mismatch_0"
+              },
+              {
+                "value": 1,
+                "display": 1,
+                "id": "mismatch_1",
+                "ui_name": "mismatch_1"
+              }
+            ]
+          }
+        },
+        {
+          "id": "length",
+          "optional": true,
+          "advanced": true,
+          "allow_multiple": false,
+          "default_values": [ 22 ],
+          "field_type": "text",
+          "text_options" : {
+            "validate_as": "int"
+          }
+        },
+        {
+          "id": "qual",
+          "optional": true,
+          "advanced": true,
+          "allow_multiple": false,
+          "default_values": [ "phred33" ],
+          "field_type": "dropdown",
+          "dropdown_options": {
+            "options": [
+              {
+                "value": "phred33",
+                "display": "phred33",
+                "id": "qual_phred33",
+                "ui_name": "qual_phred33"
+              },
+              {
+                "value": "phred64",
+                "display": "phred64",
+                "id": "qual_phred64",
+                "ui_name": "qual_phred64"
+              }
+            ]
+          }
+        },
+        {
+          "id": "minins",
+          "optional": true,
+          "advanced": true,
+          "allow_multiple": false,
+          "default_values": [ 0 ],
+          "field_type": "text",
+          "text_options" : {
+            "validate_as": "int"
+          }
+        },
+        {
+          "id": "maxins",
+          "optional": true,
+          "advanced": true,
+          "allow_multiple": false,
+          "default_values": [ 500 ],
+          "field_type": "text",
+          "text_options" : {
+            "validate_as": "int"
+          }
+        }
+    ],
+    "behavior": {
+        "service-mapping": {
+            "url": "",
+            "name": "kb_Bismark",
+            "method": "bismark_app",
+            "input_mapping": [
+                {
+                    "narrative_system_variable": "workspace",
+                    "target_property": "output_workspace"
+                },
+                {
+                    "input_parameter": "input_ref",
+                    "target_property": "input_ref",
+                    "target_type_transform": "resolved-ref"
+                },
+                {
+                    "input_parameter": "assembly_or_genome_ref",
+                    "target_property": "assembly_or_genome_ref",
+                    "target_type_transform": "resolved-ref"
+                },
+                {
+                    "input_parameter": "lib_type",
+                    "target_property": "lib_type"
+                },
+                {
+                    "input_parameter": "mismatch",
+                    "target_property": "mismatch"
+                },
+                {
+                    "input_parameter": "length",
+                    "target_property": "length"
+                },
+                {
+                    "input_parameter": "qual",
+                    "target_property": "qual"
+                },
+                {
+                    "input_parameter": "minins",
+                    "target_property": "minins"
+                },
+                {
+                    "input_parameter": "maxins",
+                    "target_property": "maxins"
+                }
+            ],
+            "output_mapping": [
+                {
+                    "service_method_output_path": [0, "report_info", "report_name"],
+                    "target_property": "report_name"
+                },
+                {
+                    "service_method_output_path": [0, "report_info", "report_ref"],
+                    "target_property": "report_ref"
+                },
+                {
+                    "narrative_system_variable": "workspace",
+                    "target_property": "workspace_name"
+                }
+            ]
+        }
+    },
+    "job_id_output_field": "docker"
+}
