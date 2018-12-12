@@ -35,7 +35,7 @@ sub new {
       $self->{my_version}=$self->get_version_from_subactions('kb_Bismark', $self->{provenance}[0]{subactions});
     }
   }
-  print('Running kb_Bismark version = ' . $self->{my_version});
+  print('Running kb_Bismark version = ' . $self->{my_version}) . "\n";
 
   $self->{ws}= KBaseReport::KBaseReportClient->new($self->{workspace_url});
   $self->{bismark_runner} = kb_Bismark::Util::BismarkRunner->new($self->{scratch});
@@ -80,7 +80,7 @@ sub align {
     );
   } elsif ($input_info->{run_mode} eq 'sample_set') {
     my $reads = $self->fetch_reads_refs_from_sampleset($input_info->{ref}, $input_info->{info}, $validated_params);
-    print 'Running on set of reads=';
+    print 'Running on set of reads=' . "\n";
     print Dumper($reads);
     my $tasks = [];
     foreach my $r (@$reads) {
@@ -99,7 +99,7 @@ sub align {
       $batch_run_params->{concurrent_njsw_tasks} = $validated_params->{concurrent_njsw_tasks};
     }
     my $results = $self->parallel_runner->run_batch($batch_run_params);
-    print 'Batch run results=';
+    print 'Batch run results=' . "\n";
     print Dumper($results);
     $return = $self->process_batch_result($results, $validated_params, $reads, $input_info->{info});
   }
@@ -359,7 +359,7 @@ sub process_batch_result {
   
   my $set_api = SetAPI::SetAPIServiceClient->new($self->{srv_wiz_url});
   my $save_result = $set_api->save_reads_alignment_set_v1($alignment_set_save_params);
-  print 'Saved ReadsAlignment=';
+  print 'Saved ReadsAlignment=' . "\n";
   print Dumper($save_result);
   push @$objects_created, {ref => $save_result->{set_ref}, description => 'Set of all reads alignments generated'};
   my $set_name = $save_result->{set_info}[1];
@@ -377,7 +377,7 @@ sub process_batch_result {
   $report_text .= '       Ran on main node = ' . $ran_locally . "\n";
   $report_text .= '   Ran on remote worker = ' . $ran_njsw . "\n\n";
 
-  print 'Report text=';
+  print 'Report text=' . "\n";
   print $report_text;
 
   my $kbr = KBaseReport::KBaseReportClient->new($self->{callback_url});
@@ -445,7 +445,7 @@ sub fetch_reads_refs_from_sampleset {
   my $refs = [];
   my $refs_for_ws_info = [];
   if (any { $_ eq "KBaseSets.ReadsSet" || $_ eq "KBaseRNASeq.RNASeqSampleSet" } @$obj_type) {
-    print("Looking up reads references in ReadsSet object");
+    print "Looking up reads references in ReadsSet object" . "\n";
     my $set_api = SetAPI::SetAPIServiceClient->new($self->{srv_wiz_url});
     my $reads_set = $set_api->get_reads_set_v1({
         ref => $ref,

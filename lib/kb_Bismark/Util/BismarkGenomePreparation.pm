@@ -32,6 +32,7 @@ sub build_index {
 
   # validate the parameters and fetch assembly_info
   my $validated_params = $self->_validate_params($params);
+  print "AA1||" . Dumper($validated_params);
   my $assembly_info = $self->_get_assembly_info($validated_params->{ref});
   
   # check the cache (keyed off of assembly_info)
@@ -76,7 +77,7 @@ sub _validate_params {
   if ($params->{ws_for_cache}) {
     $validated_params->{ws_for_cache} = $params->{ws_for_cache};
   } else {
-    print 'WARNING: bowtie2 index if created will not be cached because "ws_for_cache" field not set';
+    print 'WARNING: bismark index if created will not be cached because "ws_for_cache" field not set' . "\n";
     $validated_params->{ws_for_cache} = undef;
   }
   
@@ -86,6 +87,9 @@ sub _validate_params {
 sub _get_assembly_info {
   my ($self, $ref) = @_;
   # given a ref to an assembly or genome, figure out the assembly and return its info
+  print "AA2|" . Dumper($ref);
+  my $aa=$self->{ws}->get_object_info3({objects => [{ref => $ref}]});
+  print "AA3|" . Dumper($aa);
   my $info = $self->{ws}->get_object_info3({objects => [{ref => $ref}]})->{infos}[0];
   my $obj_type = $info->[2];
   if ($obj_type=~/^(?:KBaseGenomeAnnotations\.Assembly|KBaseGenomes\.ContigSet)/) {
@@ -99,7 +103,7 @@ sub _get_assembly_info {
     # using the path ensures we can access the assembly even if we don't have direct access
     my $ref_path = $ref . ';' . $assembly_ref;
     my $info = $self->{ws}->get_object_info3({objects => [{ref => $ref_path}]})->{infos}[0];
-    return {info => $info, ref => $ref_path, genome_ref => ref};
+    return {info => $info, ref => $ref_path, genome_ref => $ref};
   }
   Bio::KBase::Exceptions::ArgumentValidationError->throw(
     error => 'Input object was not of type: Assembly, ContigSet or Genome. Cannot build bismark Index.',
@@ -159,9 +163,9 @@ sub _get_cached_index{
   } catch {
     my ($e)=@_;
     # if we fail in saving the cached object, don't worry
-    print 'WARNING: exception encountered when trying to lookup in cache:';
+    print 'WARNING: exception encountered when trying to lookup in cache:' . "\n";
     print $e . "\n";
-    print 'END WARNING: exception encountered when trying to lookup in cache.';
+    print 'END WARNING: exception encountered when trying to lookup in cache.' . "\n";
   };
   
   return;
@@ -170,7 +174,7 @@ sub _get_cached_index{
 sub _put_cached_index {
   my ($self, $assembly_info, $index_files_basename, $output_dir, $ws_for_cache) = @_;
   unless ($ws_for_cache) {
-    print 'WARNING: bismark index cannot be cached because "ws_for_cache" field not set';
+    print 'WARNING: bismark index cannot be cached because "ws_for_cache" field not set' . "\n";
     return 0;
   }
   
@@ -214,9 +218,9 @@ sub _put_cached_index {
   } catch {
     my ($e)=@_;
     # if we fail in saving the cached object, don't worry
-    print 'WARNING: exception encountered when trying to cache the index files:';
+    print 'WARNING: exception encountered when trying to cache the index files:' . "\n";
     print $e . "\n";
-    print 'END WARNING: exception encountered when trying to cache the index files';
+    print 'END WARNING: exception encountered when trying to cache the index files' . "\n";
   };
   return 0;
 }

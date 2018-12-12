@@ -4,8 +4,8 @@ use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org 
 our $VERSION = '0.0.1';
-our $GIT_URL = 'git@github.com:zhlu9890/kb_Bismark.git';
-our $GIT_COMMIT_HASH = '3d1f02a11d3426d41836e5611389ef54c1890fcc';
+our $GIT_URL = '';
+our $GIT_COMMIT_HASH = '';
 
 =head1 NAME
 
