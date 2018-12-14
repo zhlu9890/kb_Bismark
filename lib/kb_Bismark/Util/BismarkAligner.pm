@@ -11,12 +11,14 @@ use KBaseReport::KBaseReportClient;
 use Workspace::WorkspaceClient;
 use SetAPI::SetAPIServiceClient;
 use KBParallel::KBParallelClient;
+#use installed_clients::kb_QualiMapClient;
 
 use Config::IniFiles;
 use JSON;
 use File::Temp ();
 use File::Spec;
 use File::Basename;
+use File::Slurp;
 use Storable ();
 use Data::Dumper;
 use List::Util qw(any);
@@ -27,7 +29,8 @@ sub new {
   my $self = {};
   bless $self, $class;
 
-  @{$self}{qw/scratch workspace_url callback_url srv_wiz_url provenance/}=@args;
+  @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}=@args;
+  $self->{provenance}=$self->{context}->provenance;
 
   $self->{my_version} = 'release';
   if (scalar @{$self->{provenance}} > 0) {
@@ -37,9 +40,12 @@ sub new {
   }
   print('Running kb_Bismark version = ' . $self->{my_version}) . "\n";
 
-  $self->{ws}= KBaseReport::KBaseReportClient->new($self->{workspace_url});
+  $self->{ws}= Workspace::WorkspaceClient->new($self->{workspace_url}, token => $self->{context}->token);
   $self->{bismark_runner} = kb_Bismark::Util::BismarkRunner->new($self->{scratch});
   $self->{parallel_runner} = KBParallel::KBParallelClient->new($self->{callback_url});
+  #$self->{qualimap} = installed_clients::kb_QualiMapClient->new($self->{callback_url});
+
+  return $self;
 }
 
 sub get_version_from_subactions {
@@ -62,10 +68,9 @@ sub get_version_from_subactions {
 sub align {
   my ($self, $params)=@_;
   my $validated_params = $self->validate_params($params);
-  my $input_info = $self->determine_input_info($validated_params);
+  my $input_info = $self->determine_input_info($validated_params->{input_ref});
 
   my $assembly_or_genome_ref = $validated_params->{assembly_or_genome_ref};
-  my $bismark_index_info = $self->build_bismark_index($assembly_or_genome_ref, $validated_params->{output_workspace});
 
   my $return;
   if ($input_info->{run_mode} eq 'single_library') {
@@ -74,9 +79,7 @@ sub align {
     $return = $self->single_reads_lib_run(
       $input_info,
       $assembly_or_genome_ref,
-      $validated_params,
-      undef,
-      $bismark_index_info
+      $validated_params
     );
   } elsif ($input_info->{run_mode} eq 'sample_set') {
     my $reads = $self->fetch_reads_refs_from_sampleset($input_info->{ref}, $input_info->{info}, $validated_params);
@@ -123,7 +126,9 @@ sub build_single_execution_task {
 }
 
 sub single_reads_lib_run {
-  my ($self, $read_lib_info, $assembly_or_genome_ref, $validated_params, $create_report, $bismark_index_info) = @_;
+  my ($self, $read_lib_info, $assembly_or_genome_ref, $validated_params, $bismark_index_info) = @_;
+
+  my $create_report=$validated_params->{create_report};
   
   #run on one reads
   
@@ -145,8 +150,9 @@ sub single_reads_lib_run {
   $self->clean($run_output_info);
   
   my $return={
-    output_info => $run_output_info,
-    report_info => $report_info
+    alignment_ref => $upload_results->{obj_ref},
+    report_ref => $report_info->{ref},
+    report_name => $report_info->{name}
   };
 }
 
@@ -157,7 +163,7 @@ sub build_bismark_index {
     $self->{workspace_url},
     $self->{callback_url},
     $self->{srv_wiz_url},
-    $self->{provenance}
+    $self->{context}
   );
   
   my $return=$bismarkGenomePreparation->get_index(
@@ -170,12 +176,12 @@ sub prepare_single_run {
   # Given a reads ref and an assembly, setup the bismark index
   # first setup the bidmark index of the assembly
   unless ($bismark_index_info) {
-    my $indexer = kb_Bismark::Utils::BismarkGenomePreparation->new(
+    my $indexer = kb_Bismark::Util::BismarkGenomePreparation->new(
       $self->{scratch},
       $self->{workspace_url},
       $self->{callback_url},
       $self->{srv_wiz_url},
-      $self->{provenance}
+      $self->{context}
     );
     $bismark_index_info = $indexer->build_index({
         ref => $assembly_or_genome_ref,
@@ -192,16 +198,16 @@ sub prepare_single_run {
   my $read_lib_info = $input_info->{info};
   my $reads_params = {
     read_libraries => [$read_lib_ref],
-    interleaved => 0,
+    interleaved => undef,
     gzipped =>  undef
   };
   
   my $ru = ReadsUtils::ReadsUtilsClient->new($self->{callback_url});
   my $rr = $ru->download_reads($reads_params);
   my $reads = $rr->{files};
-  
+
   $input_configuration->{reads_lib_type} = [split(/\./, $self->get_type_from_obj_info($read_lib_info))]->[1];
-  $input_configuration->{reads_files} = $reads->{read_lib_ref};
+  $input_configuration->{reads_files} = $reads->{$read_lib_ref};
   $input_configuration->{reads_lib_ref} = $read_lib_ref;
   
   $input_configuration;
@@ -212,7 +218,7 @@ sub run_bismark_align_cli {
   print '======== input_configuration =====' . "\n";
   print Dumper($input_configuration);
 
-  my $options = [qw/--multicore 4 -p 4 --bowtie2 --basename/, $validated_params->{alignment_output_name}];
+  my $options = [qw/--bowtie2 --quiet --basename/, $validated_params->{output_alignment_name}];
   my $run_output_info = {};
 
   # set the bismark index location
@@ -232,7 +238,7 @@ sub run_bismark_align_cli {
 
   # setup the output file name
   my $output_dir = File::Spec->catfile($self->{scratch}, 'bismark_alignment_output_' . time());
-  my $output_bam_file = File::Spec->catfile($output_dir, $validated_params->{alignment_output_name} . '.bam');
+  my $output_bam_file = File::Spec->catfile($output_dir, $validated_params->{output_alignment_name} . '.bam');
   $run_output_info->{output_bam_file} = $output_bam_file;
   unshift @$options, '-o', $output_dir;
   $run_output_info->{output_dir} = $output_dir;
@@ -282,37 +288,42 @@ sub clean {
 sub create_report_for_single_run {
   my ($self, $run_output_info, $input_configuration, $validated_params) = @_;
 
+  #my $qualimap_report = $self->{qualimap}->run_bamqc({
+  #    input_ref => $run_output_info->{upload_results}{obj_ref}
+  #  }
+  #);
+  #my $qc_result_zip_info = $qualimap_report->{qc_result_zip_info};
+
   # create report
   my $report_text = "Ran on a single reads library.\n\n";
   my $alignment_info = $self->get_obj_info($run_output_info->{upload_results}{obj_ref});
   $report_text .= "Created ReadsAlignment: " . $alignment_info->[1] . "\n";
   $report_text .= "                        " . $run_output_info->{upload_results}{obj_ref} . "\n";
+  system("cd $run_output_info->{output_dir} && bismark2report");
+  my $html=`cat $run_output_info->{output_dir}/$validated_params->{output_alignment_name}_*_report.html`;
+
   my $kbr = KBaseReport::KBaseReportClient->new($self->{callback_url});
-  my $report_info = kbr->create_extended_report({
+  my $report_info = $kbr->create_extended_report({
       message => $report_text,
       objects_created => [{
           ref => $run_output_info->{upload_results}{obj_ref},
           description => 'ReadsAlignment'
         }
       ],
-      report_object_name => 'kb_Bismark',
-      #report_object_name => 'kb_Bismark_' + str(uuid.uuid4()),
-      direct_html_link_index => undef,
-      html_links => [],
+      report_object_name => 'kb_Bismark_' . time(),
+      direct_html => $html,
+      #direct_html_link_index => undef,
       #html_links => [{
-      #    shock_id => qc_result_zip_info['shock_id'],
-      #    name => qc_result_zip_info['index_html_file_name'],
-      #    label => qc_result_zip_info['name']
+      #    shock_id => $qc_result_zip_info->{shock_id},
+      #    name => $qc_result_zip_info->{index_html_file_name},
+      #    label => $qc_result_zip_info->{name}
       #  }
       #],
       workspace_name => $validated_params->{output_workspace}
     }
   );
-  
-  my $return={
-    report_name => $report_info->{name}, 
-    report_ref  => $report_info->{ref}
-  };
+
+  $report_info;
 }
 
 sub process_batch_result {
@@ -412,7 +423,7 @@ sub validate_params {
   
   foreach my $field (@$required_string_fields) {
     if ($params->{$field}) {
-      $validated_params->{field} = $params->{field};
+      $validated_params->{$field} = $params->{$field};
     } else {
       die qq("$field" field required to run bismark aligner app);
     }
@@ -420,7 +431,7 @@ sub validate_params {
     my $optional_fields = [qw/lib_type mismatch length qual minins maxins output_alignment_suffix output_alignment_name/];
     foreach my $field (@$optional_fields) {
       if (defined $params->{$field}) {
-        $validated_params->{field} = $params->{field};
+        $validated_params->{$field} = $params->{$field};
       }
     }
     
@@ -468,16 +479,11 @@ sub fetch_reads_refs_from_sampleset {
     
     # get object info so we can name things properly
     my $infos = $self->{ws}->get_object_info3({objects => $refs_for_ws_info})->{infos};
-    
-    my $name_ext = '_alignment';
-    if (defined $validated_params->{output_alignment_suffix}) {
-      my $ext = $validated_params->{output_alignment_suffix};
-      $ext=~s/ //g;
-      if ($ext) {
-        $name_ext = $ext;
-      }
-    }
-    
+
+    my $ext=$validated_params->{output_alignment_suffix};
+    defined $ext and $ext=~s/ //g;
+    my $name_ext=$ext || '_alignment';
+
     my $unique_name_lookup = {};
     foreach my $k (0 .. $#$refs) {
       $refs->[$k]{info} = $infos->{k};
@@ -497,19 +503,19 @@ sub fetch_reads_refs_from_sampleset {
 }
   
 sub determine_input_info {
-  my ($self, $validated_params)=@_;
+  my ($self, $input_ref)=@_;
   # get info on the input_ref object and determine if we run once or run on a set 
-  my $info = $self->get_obj_info($validated_params->{input_ref});
+  my $info = $self->get_obj_info($input_ref);
   my $obj_type = $self->get_type_from_obj_info($info);
   if ( any {$obj_type eq $_} qw(KBaseAssembly.PairedEndLibrary KBaseAssembly.SingleEndLibrary KBaseFile.PairedEndLibrary KBaseFile.SingleEndLibrary)) {
-    return {run_mode => 'single_library', info => $info, ref => $validated_params->{input_ref}};
+    return {run_mode => 'single_library', info => $info, ref => $input_ref};
   }
   
   if ($obj_type eq 'KBaseRNASeq.RNASeqSampleSet') {
-    return {run_mode => 'sample_set', info => $info, ref => $validated_params->{input_ref}};
+    return {run_mode => 'sample_set', info => $info, ref => $input_ref};
   }
   if ($obj_type eq 'KBaseSets.ReadsSet') {
-    return {run_mode => 'sample_set', info => $info, ref => $validated_params->{input_ref}};
+    return {run_mode => 'sample_set', info => $info, ref => $input_ref};
   }
   
   die 'Object type of input_ref is not valid, was: ' . $obj_type;

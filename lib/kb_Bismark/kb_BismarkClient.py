@@ -52,12 +52,13 @@ class kb_Bismark(object):
         """
         :param params: instance of type "bismarkParams" -> structure:
            parameter "input_ref" of String, parameter
-           "assembly_or_genome_ref" of String, parameter "lib_type" of
-           String, parameter "mismatch" of Long, parameter "length" of Long,
-           parameter "qual" of String, parameter "minins" of Long, parameter
-           "maxins" of Long
+           "assembly_or_genome_ref" of String, parameter "output_workspace"
+           of String, parameter "lib_type" of String, parameter "mismatch" of
+           Long, parameter "length" of Long, parameter "qual" of String,
+           parameter "minins" of Long, parameter "maxins" of Long
         :returns: instance of type "bismarkResult" -> structure: parameter
-           "alignment_ref" of String
+           "alignment_ref" of String, parameter "report_name" of String,
+           parameter "report_ref" of String
         """
         return self._client.call_method(
             'kb_Bismark.bismark',

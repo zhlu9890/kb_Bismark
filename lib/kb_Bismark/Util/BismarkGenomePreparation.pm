@@ -20,8 +20,9 @@ sub new {
   my $self = {};
   bless $self, $class;
   
-  @{$self}{qw/scratch workspace_url callback_url srv_wiz_url provenance/}=@args;
-  $self->{ws}=Workspace::WorkspaceClient->new($self->{workspace_url});
+  @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}=@args;
+  $self->{provenance}=$self->{context}->provenance;
+  $self->{ws}=Workspace::WorkspaceClient->new($self->{workspace_url}, token => $self->{context}->token);
   $self->{bismark_runner}=kb_Bismark::Util::BismarkRunner->new($self->{scratch});
 
   return $self;
@@ -31,12 +32,11 @@ sub build_index {
   my ($self, $params)=@_;
 
   # validate the parameters and fetch assembly_info
-  my $validated_params = $self->_validate_params($params);
-  print "AA1||" . Dumper($validated_params);
-  my $assembly_info = $self->_get_assembly_info($validated_params->{ref});
+  my $validated_params = $self->validate_params($params);
+  my $assembly_info = $self->get_assembly_info($validated_params->{ref});
   
   # check the cache (keyed off of assembly_info)
-  my $index_info = $self->_get_cached_index($assembly_info, $validated_params);
+  my $index_info = $self->get_cached_index($assembly_info, $validated_params);
   if ($index_info) {
     $index_info->{from_cache} = 1;
     $index_info->{pushed_to_cache} = 0;
@@ -48,11 +48,11 @@ sub build_index {
   }
   $index_info->{assembly_ref} = $assembly_info->{ref};
   $index_info->{genome_ref} = $assembly_info->{genome_ref};
-  
+
   return $index_info;
 }
 
-sub _validate_params {
+sub validate_params {
   my ($self, $params) = @_;
   # validate parameters; can do some processing here to produce validated params
   my $validated_params = {ref =>  undef};
@@ -68,7 +68,7 @@ sub _validate_params {
   if ($params->{output_dir}) {
     $validated_params->{output_dir} = $params->{output_dir};
   } else {
-    $validated_params->{output_dir} = File::Spec->catfile($self->{scratch_dir}, 'bismark_index_' . time());
+    $validated_params->{output_dir} = File::Spec->catfile($self->{scratch}, 'bismark_index_' . time());
   }
 
   if (-e $validated_params->{output_dir}) {
@@ -84,12 +84,9 @@ sub _validate_params {
   return $validated_params;
 }
 
-sub _get_assembly_info {
+sub get_assembly_info {
   my ($self, $ref) = @_;
   # given a ref to an assembly or genome, figure out the assembly and return its info
-  print "AA2|" . Dumper($ref);
-  my $aa=$self->{ws}->get_object_info3({objects => [{ref => $ref}]});
-  print "AA3|" . Dumper($aa);
   my $info = $self->{ws}->get_object_info3({objects => [{ref => $ref}]})->{infos}[0];
   my $obj_type = $info->[2];
   if ($obj_type=~/^(?:KBaseGenomeAnnotations\.Assembly|KBaseGenomes\.ContigSet)/) {
@@ -107,12 +104,13 @@ sub _get_assembly_info {
   }
   Bio::KBase::Exceptions::ArgumentValidationError->throw(
     error => 'Input object was not of type: Assembly, ContigSet or Genome. Cannot build bismark Index.',
-    method_name => '_get_assembly_info'
+    method_name => 'get_assembly_info'
   );
 }
 
-sub _get_cached_index{
+sub get_cached_index{
   my ($self, $assembly_info, $validated_params) = @_;
+  my $return;
   try {
     # note: list_reference_objects does not yet support reference paths, so we need to call
     # with the direct reference.  So we won't get a cache hit if you don't have direct access
@@ -125,7 +123,8 @@ sub _get_cached_index{
     # iterate through each of the objects that reference the assembly
     my $bismark_indexes = [];
     foreach my $o (@$objs) {
-      if ($o->[2]=~/^KBaseBSSeq\.Bismark2Index/) {
+      #if ($o->[2]=~/^KBaseBSSeq\.Bismark2Index/) {
+      if ($o->[2]=~/^KBaseRNASeq\.Bowtie2IndexV2/) {
         push @$bismark_indexes, $o;
       }
     }
@@ -149,14 +148,14 @@ sub _get_cached_index{
 
     my $dfu = DataFileUtil::DataFileUtilClient->new($self->{callback_url});
     $dfu->shock_to_file({
-        file_path => File::Spec->catfile($validated_params->{output_dir}, 'bimark_index.tar.gz'),
+        file_path => File::Spec->catfile($validated_params->{output_dir}, 'bismark_index.tar.gz'),
         handle_id => $index_obj_data->{handle}{hid},
         unpack => 'unpack'
       }
     );
-    print 'Cache hit: ';
-    Dumper($index_obj_data);
-    return {
+    print 'Cache hit: '. "\n";
+    print Dumper($index_obj_data);
+    $return={
       output_dir => $validated_params->{output_dir},
       index_files_basename => $index_obj_data->{index_files_basename}
     };
@@ -166,21 +165,23 @@ sub _get_cached_index{
     print 'WARNING: exception encountered when trying to lookup in cache:' . "\n";
     print $e . "\n";
     print 'END WARNING: exception encountered when trying to lookup in cache.' . "\n";
+    $return=undef;
   };
   
-  return;
+  $return;
 }
 
-sub _put_cached_index {
+sub put_cached_index {
   my ($self, $assembly_info, $index_files_basename, $output_dir, $ws_for_cache) = @_;
   unless ($ws_for_cache) {
     print 'WARNING: bismark index cannot be cached because "ws_for_cache" field not set' . "\n";
     return 0;
   }
   
+  my $return=0;
   try {
     my $dfu = DataFileUtil::DataFileUtilClient->new($self->{callback_url});
-    my $result = dfu->file_to_shock({
+    my $result = $dfu->file_to_shock({
         file_path => $output_dir,
         make_handle => 1,
         pack => 'targz'
@@ -201,7 +202,8 @@ sub _put_cached_index {
           provenance => $self->{provenance},
           name => basename($output_dir),
           data => $bismark_index,
-          type => 'KBaseBSSeq.Bismark2Index'
+          #type => 'KBaseBSSeq.Bismark2Index'
+          type => 'KBaseRNASeq.Bowtie2IndexV2'
         }
       ]
     };
@@ -210,19 +212,20 @@ sub _put_cached_index {
       $save_params->{id} = $ws_for_cache;
     } else {
       $save_params->{workspace} = $ws_for_cache;
-      my $save_result = $ws->save_objects($save_params);
-      print 'BismarkIndex cached to: ' .
-      Dumper($save_result->[0]);
-      return 1;
-    } 
+    }
+    my $save_result = $ws->save_objects($save_params);
+    print 'BismarkIndex cached to: ' . "\n";
+    print Dumper($save_result->[0]);
+    $return=1;
   } catch {
     my ($e)=@_;
     # if we fail in saving the cached object, don't worry
     print 'WARNING: exception encountered when trying to cache the index files:' . "\n";
     print $e . "\n";
     print 'END WARNING: exception encountered when trying to cache the index files' . "\n";
+    $return=0;
   };
-  return 0;
+  $return;
 }
 
 
@@ -236,9 +239,10 @@ sub _build_index {
   if (-e $validated_params->{output_dir}) {
     die 'Output directory name specified (' . $validated_params->{output_dir} . ') already exists. Will not overwrite, so aborting.';
   }
+  make_path($validated_params->{output_dir});
 
   # configure the command line args and run it
-  my $cli_params = $self->_build_cli_params($fasta_info->{path}, $fasta_info->{assembly_name}, $validated_params);
+  my $cli_params = $self->build_cli_params($fasta_info->{path}, $fasta_info->{assembly_name}, $validated_params);
   $self->{bismark_runner}->run('bismark_genome_preparation', $cli_params);
   my $index_info = {
     output_dir => $validated_params->{output_dir},
@@ -246,7 +250,7 @@ sub _build_index {
   };
 
   # cache the result, mark if it worked or not
-  my $cache_success = $self->_put_cached_index(
+  my $cache_success = $self->put_cached_index(
     $assembly_info,
     $fasta_info->{assembly_name},
     $validated_params->{output_dir},
@@ -258,9 +262,9 @@ sub _build_index {
 }
 
 
-sub _build_cli_params {
+sub build_cli_params {
   my ($self, $fasta_file_path, $index_files_basename, $validated_params) = @_;
-  copy($fasta_file_path, $validated_params->{output_dir});
+  move($fasta_file_path, $validated_params->{output_dir});
 
   my $cli_params = [];
 

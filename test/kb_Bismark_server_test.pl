@@ -48,7 +48,6 @@ sub loadAssembly {
       assembly_name => 'test_assembly'
     }
   );
-  return $assembly_ref;
 }
 
 sub loadSingleEndReads {
@@ -63,7 +62,7 @@ sub loadSingleEndReads {
     }
   )->{obj_ref};
   print 'Loaded SingleEndReads: ' . $se_reads_ref;
-  return $se_reads_ref;
+  $se_reads_ref;
 }
 
 eval {
@@ -81,13 +80,44 @@ eval {
   my ($assembly_ref, $se_lib_ref, $params, $res);
 
   lives_ok {
-    $assembly_ref = loadAssembly();
+    $assembly_ref ||= loadAssembly();
     $res=$impl->genome_preparation({ref => $assembly_ref});
   }, 'genome_preparation'; 
   diag explain $res;
   cmp_ok($res->{from_cache}, '==', 0);
   cmp_ok($res->{pushed_to_cache}, '==', 0);
   cmp_ok($res->{index_files_basename}, 'eq', 'test_assembly');
+
+  lives_ok {
+    $assembly_ref ||= loadAssembly();
+    $res=$impl->genome_preparation({ref => $assembly_ref, ws_for_cache => get_ws_name()});
+  }, 'genome_preparation, save to ws_for_cache';
+  diag explain $res;
+  cmp_ok($res->{from_cache}, '==', 0);
+  cmp_ok($res->{pushed_to_cache}, '==', 1);
+  cmp_ok($res->{index_files_basename}, 'eq', 'test_assembly');
+
+  lives_ok {
+    $assembly_ref ||= loadAssembly();
+    $res=$impl->genome_preparation({ref => $assembly_ref});
+  }, 'genome_preparation, load from cache';
+  diag explain $res;
+  cmp_ok($res->{from_cache}, '==', 1);
+  cmp_ok($res->{pushed_to_cache}, '==', 0);
+  cmp_ok($res->{index_files_basename}, 'eq', 'test_assembly');
+
+  lives_ok {
+    $assembly_ref ||= loadAssembly();
+    $se_lib_ref ||= loadSingleEndReads();
+    $params={
+      input_ref => $se_lib_ref,
+      assembly_or_genome_ref => $assembly_ref,
+      output_obj_name_suffix => 'readsAlignment1',
+      output_workspace => get_ws_name(),
+    };
+    $res = $impl->bismark_app($params);
+  }, 'bismark, runnig single end reads';
+  diag explain $res;
 
   done_testing();
 };

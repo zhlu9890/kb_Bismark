@@ -24,6 +24,8 @@ module kb_Bismark {
       string input_ref;
       string assembly_or_genome_ref;
 
+      string output_workspace;
+
       string lib_type;
       int mismatch;
       int length;
@@ -34,6 +36,8 @@ module kb_Bismark {
 
     typedef structure {
       string alignment_ref;
+      string report_name;
+      string report_ref;
     } bismarkResult;
 
     typedef structure {

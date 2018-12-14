@@ -224,6 +224,7 @@ $result is a kb_Bismark.bismarkResult
 bismarkParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 	lib_type has a value which is a string
 	mismatch has a value which is an int
 	length has a value which is an int
@@ -232,6 +233,8 @@ bismarkParams is a reference to a hash where the following keys are defined:
 	maxins has a value which is an int
 bismarkResult is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 </pre>
 
@@ -244,6 +247,7 @@ $result is a kb_Bismark.bismarkResult
 bismarkParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 	lib_type has a value which is a string
 	mismatch has a value which is an int
 	length has a value which is an int
@@ -252,6 +256,8 @@ bismarkParams is a reference to a hash where the following keys are defined:
 	maxins has a value which is an int
 bismarkResult is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 
 =end text
@@ -799,6 +805,7 @@ pushed_to_cache has a value which is a kb_Bismark.boolean
 a reference to a hash where the following keys are defined:
 input_ref has a value which is a string
 assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 lib_type has a value which is a string
 mismatch has a value which is an int
 length has a value which is an int
@@ -815,6 +822,7 @@ maxins has a value which is an int
 a reference to a hash where the following keys are defined:
 input_ref has a value which is a string
 assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 lib_type has a value which is a string
 mismatch has a value which is an int
 length has a value which is an int
@@ -842,6 +850,8 @@ maxins has a value which is an int
 <pre>
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 </pre>
 
@@ -851,6 +861,8 @@ alignment_ref has a value which is a string
 
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text

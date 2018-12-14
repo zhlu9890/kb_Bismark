@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'git@github.com:zhlu9890/kb_Bismark.git';
-our $GIT_COMMIT_HASH = '3d1f02a11d3426d41836e5611389ef54c1890fcc';
+our $GIT_COMMIT_HASH = 'd383e62b0e5c341eef61bc9d220f150964ee642f';
 
 =head1 NAME
 
@@ -43,6 +43,7 @@ sub new
       $self->{$name} = $cfg->val(kb_Bismark => $service);
     }
     die "no workspace-url defined" unless $self->{workspace_url};
+    $self->{context}=$kb_Bismark::kb_BismarkServer::CallContext;
                     
     #END_CONSTRUCTOR
 
@@ -130,7 +131,7 @@ sub genome_preparation
     print 'Running genome_preparation() with params=' . "\n";
     print Dumper($params);
     my $indexer=kb_Bismark::Util::BismarkGenomePreparation->new(
-      @{$self}{qw/scratch workspace_url callback_url/}, $ctx->provenance(), 
+      @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}, 
     );
     $result=$indexer->build_index($params);
     #END genome_preparation
@@ -163,6 +164,7 @@ $result is a kb_Bismark.bismarkResult
 bismarkParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 	lib_type has a value which is a string
 	mismatch has a value which is an int
 	length has a value which is an int
@@ -171,6 +173,8 @@ bismarkParams is a reference to a hash where the following keys are defined:
 	maxins has a value which is an int
 bismarkResult is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 </pre>
 
@@ -183,6 +187,7 @@ $result is a kb_Bismark.bismarkResult
 bismarkParams is a reference to a hash where the following keys are defined:
 	input_ref has a value which is a string
 	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 	lib_type has a value which is a string
 	mismatch has a value which is an int
 	length has a value which is an int
@@ -191,6 +196,8 @@ bismarkParams is a reference to a hash where the following keys are defined:
 	maxins has a value which is an int
 bismarkResult is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 
 =end text
@@ -224,7 +231,7 @@ sub bismark
     print 'Running bismark() with params=' . "\n";
     print Dumper($params);
     my $aligner=kb_Bismark::Util::BismarkAligner->new(
-      @{$self}{qw/scratch workspace_url callback_url srv_wiz_url/}, $ctx->provenance(), 
+      @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}, 
     );
     $result=$aligner->align($params);
     #END bismark
@@ -303,9 +310,7 @@ sub methylation_extractor
     #BEGIN methylation_extractor
     print 'Running methylation_extractor() with params=' . "\n";
     print Dumper($params);
-    my $result={
-      report_ref => 0,
-    };
+    my $result={};
     #END methylation_extractor
     my @_bad_returns;
     (ref($result) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"result\" (value was \"$result\")");
@@ -402,14 +407,7 @@ sub bismark_app
     #BEGIN bismark_app
     print 'Running bismark_app() with params=' . "\n";
     print Dumper($params);
-    #$self->genome_preparation($params);
-    #my $bismark_result=$self->bismark($params);
-    #my $extractor_result=$self->methylation_extractor($bismark_result);
-    $result={
-      alignment_ref => '',
-      report_ref => '',
-      report_name => 'Bimsark Report',
-    };
+    $result=$self->bismark($params);
     #END bismark_app
     my @_bad_returns;
     (ref($result) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"result\" (value was \"$result\")");
@@ -651,6 +649,7 @@ pushed_to_cache has a value which is a kb_Bismark.boolean
 a reference to a hash where the following keys are defined:
 input_ref has a value which is a string
 assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 lib_type has a value which is a string
 mismatch has a value which is an int
 length has a value which is an int
@@ -667,6 +666,7 @@ maxins has a value which is an int
 a reference to a hash where the following keys are defined:
 input_ref has a value which is a string
 assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 lib_type has a value which is a string
 mismatch has a value which is an int
 length has a value which is an int
@@ -694,6 +694,8 @@ maxins has a value which is an int
 <pre>
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 </pre>
 
@@ -703,6 +705,8 @@ alignment_ref has a value which is a string
 
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text

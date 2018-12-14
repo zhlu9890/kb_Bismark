@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
     "input_ref",
     "assembly_or_genome_ref",
+    "output_workspace",
     "lib_type",
     "mismatch",
     "length",
@@ -34,6 +35,8 @@ public class BismarkParams {
     private String inputRef;
     @JsonProperty("assembly_or_genome_ref")
     private String assemblyOrGenomeRef;
+    @JsonProperty("output_workspace")
+    private String outputWorkspace;
     @JsonProperty("lib_type")
     private String libType;
     @JsonProperty("mismatch")
@@ -75,6 +78,21 @@ public class BismarkParams {
 
     public BismarkParams withAssemblyOrGenomeRef(String assemblyOrGenomeRef) {
         this.assemblyOrGenomeRef = assemblyOrGenomeRef;
+        return this;
+    }
+
+    @JsonProperty("output_workspace")
+    public String getOutputWorkspace() {
+        return outputWorkspace;
+    }
+
+    @JsonProperty("output_workspace")
+    public void setOutputWorkspace(String outputWorkspace) {
+        this.outputWorkspace = outputWorkspace;
+    }
+
+    public BismarkParams withOutputWorkspace(String outputWorkspace) {
+        this.outputWorkspace = outputWorkspace;
         return this;
     }
 
@@ -180,7 +198,7 @@ public class BismarkParams {
 
     @Override
     public String toString() {
-        return ((((((((((((((((((("BismarkParams"+" [inputRef=")+ inputRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", libType=")+ libType)+", mismatch=")+ mismatch)+", length=")+ length)+", qual=")+ qual)+", minins=")+ minins)+", maxins=")+ maxins)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((("BismarkParams"+" [inputRef=")+ inputRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", outputWorkspace=")+ outputWorkspace)+", libType=")+ libType)+", mismatch=")+ mismatch)+", length=")+ length)+", qual=")+ qual)+", minins=")+ minins)+", maxins=")+ maxins)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }
