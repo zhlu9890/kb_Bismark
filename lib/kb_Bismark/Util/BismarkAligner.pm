@@ -29,6 +29,9 @@ sub new {
   my $self = {};
   bless $self, $class;
 
+  print "Create BismarkAligner with params=\n";
+  print Dumper(\@args);
+
   @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}=@args;
   $self->{provenance}=$self->{context}->provenance;
 
@@ -74,7 +77,7 @@ sub align {
 
   my $return;
   if ($input_info->{run_mode} eq 'single_library') {
-    $validated_params->{output_alignment_name}||=$input_info->{info}[1] . ($validated_params->{output_alignment_suffix} || "_alignment");
+    $validated_params->{output_alignment_name}||=$input_info->{info}[1] . ($validated_params->{output_alignment_suffix} || "_bismarkAlignment");
 
     $return = $self->single_reads_lib_run(
       $input_info,
@@ -365,7 +368,7 @@ sub process_batch_result {
   my $alignment_set_save_params = {
     data => $alignment_set_data,
     workspace => $validated_params->{output_workspace},
-    output_object_name => $input_set_info->[1] . $validated_params->{output_obj_name_suffix}
+    output_object_name => $input_set_info->[1] . ($validated_params->{output_alignment_suffix} || "_bismarkAlignment")
   };
   
   my $set_api = SetAPI::SetAPIServiceClient->new($self->{srv_wiz_url});
@@ -419,7 +422,7 @@ sub validate_params {
   my ($self, $params) = @_;
   my $validated_params = {};
   
-  my $required_string_fields = [qw/input_ref assembly_or_genome_ref output_obj_name_suffix output_workspace/];
+  my $required_string_fields = [qw/input_ref assembly_or_genome_ref output_workspace/];
   
   foreach my $field (@$required_string_fields) {
     if ($params->{$field}) {

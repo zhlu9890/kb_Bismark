@@ -112,7 +112,6 @@ eval {
     $params={
       input_ref => $se_lib_ref,
       assembly_or_genome_ref => $assembly_ref,
-      output_obj_name_suffix => 'readsAlignment1',
       output_workspace => get_ws_name(),
     };
     $res = $impl->bismark_app($params);
