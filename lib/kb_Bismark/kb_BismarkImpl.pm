@@ -44,6 +44,8 @@ sub new
     }
     die "no workspace-url defined" unless $self->{workspace_url};
     $self->{context}=$kb_Bismark::kb_BismarkServer::CallContext;
+    print "New context=\n";
+    print Dumper($self->{context});
                     
     #END_CONSTRUCTOR
 
@@ -408,6 +410,10 @@ sub bismark_app
     print 'Running bismark_app() with params=' . "\n";
     print Dumper($params);
     $result=$self->bismark($params);
+    print "Impl context=\n";
+    print Dumper($kb_Bismark::kb_BismarkServer::CallContext);
+    print "Self context=\n";
+    print Dumper( $self->{context});
     #END bismark_app
     my @_bad_returns;
     (ref($result) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"result\" (value was \"$result\")");
