@@ -44,8 +44,6 @@ sub new
     }
     die "no workspace-url defined" unless $self->{workspace_url};
     $self->{context}=$kb_Bismark::kb_BismarkServer::CallContext;
-    print "New context=\n";
-    print Dumper($self->{context});
                     
     #END_CONSTRUCTOR
 
@@ -133,7 +131,7 @@ sub genome_preparation
     print 'Running genome_preparation() with params=' . "\n";
     print Dumper($params);
     my $indexer=kb_Bismark::Util::BismarkGenomePreparation->new(
-      @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}, 
+      @{$self}{qw/scratch workspace_url callback_url srv_wiz_url/}, $ctx, 
     );
     $result=$indexer->build_index($params);
     #END genome_preparation
@@ -233,7 +231,7 @@ sub bismark
     print 'Running bismark() with params=' . "\n";
     print Dumper($params);
     my $aligner=kb_Bismark::Util::BismarkAligner->new(
-      @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}, 
+      @{$self}{qw/scratch workspace_url callback_url srv_wiz_url/}, $ctx, 
     );
     $result=$aligner->align($params);
     #END bismark
@@ -407,10 +405,6 @@ sub bismark_app
     my $ctx = $kb_Bismark::kb_BismarkServer::CallContext;
     my($result);
     #BEGIN bismark_app
-    print "Impl context=\n";
-    print Dumper($kb_Bismark::kb_BismarkServer::CallContext);
-    print "Self context=\n";
-    print Dumper( $self->{context});
     print 'Running bismark_app() with params=' . "\n";
     print Dumper($params);
     $result=$self->bismark($params);

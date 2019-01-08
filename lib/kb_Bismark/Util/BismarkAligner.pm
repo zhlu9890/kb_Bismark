@@ -29,9 +29,6 @@ sub new {
   my $self = {};
   bless $self, $class;
 
-  print "Create BismarkAligner with params=\n";
-  print Dumper(\@args);
-
   @{$self}{qw/scratch workspace_url callback_url srv_wiz_url context/}=@args;
   $self->{provenance}=$self->{context}->provenance;
 
