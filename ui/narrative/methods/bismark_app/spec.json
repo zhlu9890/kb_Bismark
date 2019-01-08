@@ -42,7 +42,7 @@
             "dropdown_options": {
               "options": [
                 {
-                  "value": "directional",
+                  "value": "",
                   "display": "directional",
                   "id": "lib_type_directional",
                   "ui_name": "lib_type_directional"

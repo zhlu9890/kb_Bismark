@@ -248,7 +248,7 @@ sub run_bismark_align_cli {
     unshift @$options, '--' . $validated_params->{qual} . '-quals';
   }
 
-  if (defined $validated_params->{lib_type}) {
+  if ($validated_params->{lib_type}) {
     unshift @$options, '--' . $validated_params->{lib_type};
   }
 
