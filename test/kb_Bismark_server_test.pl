@@ -39,8 +39,8 @@ sub get_ws_name {
 }
 
 sub loadAssembly {
-  my $fa_path=File::Spec->catfile($scratch, 'chr8.fa');
-  copy(File::Spec->catfile('data', 'chr8.fa'), $fa_path);
+  my $fa_path=File::Spec->catfile($scratch, 'TAIR_chr4.fa');
+  copy(File::Spec->catfile('data', 'TAIR_chr4.fa'), $fa_path);
   my $au=AssemblyUtil::AssemblyUtilClient->new($callback_url);
   my $assembly_ref = $au->save_assembly_from_fasta({
       file => {path => $fa_path},
@@ -51,8 +51,8 @@ sub loadAssembly {
 }
 
 sub loadSingleEndReads {
-  my $fq_path=File::Spec->catfile($scratch, 'test_reads_bs.fq');
-  copy(File::Spec->catfile('data', 'test_reads_bs.fq'), $fq_path);
+  my $fq_path=File::Spec->catfile($scratch, 'SRR5626947_10000_1.fastq');
+  copy(File::Spec->catfile('data', 'SRR5626947_10000_1.fastq'), $fq_path);
   my $ru=ReadsUtils::ReadsUtilsClient->new($callback_url);
   my $se_reads_ref = $ru->upload_reads({
       fwd_file => $fq_path,
@@ -63,6 +63,25 @@ sub loadSingleEndReads {
   )->{obj_ref};
   print 'Loaded SingleEndReads: ' . $se_reads_ref;
   $se_reads_ref;
+}
+
+sub loadPairedEndReads {
+  my $fq_path1=File::Spec->catfile($scratch, 'SRR5626947_10000_1.fastq');
+  copy(File::Spec->catfile('data', 'SRR5626947_10000_1.fastq'), $fq_path1);
+  my $fq_path2=File::Spec->catfile($scratch, 'SRR5626947_10000_2.fastq');
+  copy(File::Spec->catfile('data', 'SRR5626947_10000_2.fastq'), $fq_path2);
+
+  my $ru=ReadsUtils::ReadsUtilsClient->new($callback_url);
+  my $pe_reads_ref = $ru->upload_reads({
+      fwd_file => $fq_path1,
+      rev_file => $fq_path2,
+      wsname => get_ws_name(),
+      name => 'test_readsPE',
+      sequencing_tech => 'artificial reads'
+    }
+  )->{obj_ref};
+  print 'Loaded PairedEndReads: ' . $pe_reads_ref;
+  $pe_reads_ref;
 }
 
 eval {
@@ -77,7 +96,7 @@ eval {
   isa_ok($impl, 'kb_Bismark::kb_BismarkImpl');
   diag explain $impl;
   can_ok($impl, qw/genome_preparation bismark methylation_extractor bismark_app run_bismark_cli/);
-  my ($assembly_ref, $se_lib_ref, $params, $res);
+  my ($assembly_ref, $se_lib_ref, $pe_lib_ref, $params, $res);
 
   lives_ok {
     $assembly_ref ||= loadAssembly();
@@ -116,6 +135,18 @@ eval {
     };
     $res = $impl->bismark_app($params);
   }, 'bismark, runnig single end reads';
+  diag explain $res;
+
+  lives_ok {
+    $assembly_ref ||= loadAssembly();
+    $pe_lib_ref ||= loadPairedEndReads();
+    $params={
+      input_ref => $pe_lib_ref,
+      assembly_or_genome_ref => $assembly_ref,
+      output_workspace => get_ws_name(),
+    };
+    $res = $impl->bismark_app($params);
+  }, 'bismark, runnig paired end reads';
   diag explain $res;
 
   done_testing();

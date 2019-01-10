@@ -198,7 +198,7 @@ sub prepare_single_run {
   my $read_lib_info = $input_info->{info};
   my $reads_params = {
     read_libraries => [$read_lib_ref],
-    interleaved => undef,
+    interleaved => "false",
     gzipped =>  undef
   };
   
@@ -238,7 +238,7 @@ sub run_bismark_align_cli {
 
   # setup the output file name
   my $output_dir = File::Spec->catfile($self->{scratch}, 'bismark_alignment_output_' . time());
-  my $output_bam_file = File::Spec->catfile($output_dir, $validated_params->{output_alignment_name} . '.bam');
+  my $output_bam_file = File::Spec->catfile($output_dir, $validated_params->{output_alignment_name} . ($input_configuration->{reads_lib_type} eq 'PairedEndLibrary' ? '_pe' : '') . '.bam');
   $run_output_info->{output_bam_file} = $output_bam_file;
   unshift @$options, '-o', $output_dir;
   $run_output_info->{output_dir} = $output_dir;
