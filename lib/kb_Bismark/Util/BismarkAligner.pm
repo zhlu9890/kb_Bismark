@@ -149,10 +149,14 @@ sub single_reads_lib_run {
   
   $self->clean($run_output_info);
   
+  #my $return={
+  #  alignment_ref => $upload_results->{obj_ref},
+  #  report_ref => $report_info->{ref},
+  #  report_name => $report_info->{name}
+  #};
   my $return={
-    alignment_ref => $upload_results->{obj_ref},
-    report_ref => $report_info->{ref},
-    report_name => $report_info->{name}
+    output_info => $run_output_info, 
+    report_info => $report_info,
   };
 }
 
