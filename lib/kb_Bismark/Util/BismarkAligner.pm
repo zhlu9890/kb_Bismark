@@ -149,15 +149,15 @@ sub single_reads_lib_run {
   
   $self->clean($run_output_info);
   
-  #my $return={
-  #  alignment_ref => $upload_results->{obj_ref},
-  #  report_ref => $report_info->{ref},
-  #  report_name => $report_info->{name}
-  #};
   my $return={
-    output_info => $run_output_info, 
-    report_info => $report_info,
+    alignment_ref => $upload_results->{obj_ref},
+    report_ref => $report_info ? $report_info->{ref} : undef,
+    report_name => $report_info ? $report_info->{name} : undef
   };
+  #my $return={
+  #  output_info => $run_output_info, 
+  #  report_info => $report_info,
+  #};
 }
 
 sub build_bismark_index {
@@ -328,6 +328,7 @@ sub create_report_for_single_run {
   );
 
   $report_info;
+  #+{report_name => $report_info->{name}, report_ref => $report_info->{ref}};
 }
 
 sub process_batch_result {
