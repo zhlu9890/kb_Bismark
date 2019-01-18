@@ -315,7 +315,7 @@ sub create_report_for_single_run {
         }
       ],
       report_object_name => 'kb_Bismark_' . time(),
-      direct_html => $html,
+      #direct_html => $html,
       #direct_html_link_index => undef,
       #html_links => [{
       #    shock_id => $qc_result_zip_info->{shock_id},
