@@ -6,6 +6,7 @@ use kb_Bismark::Util::BismarkRunner;
 
 use ReadsUtils::ReadsUtilsClient;
 use ReadsAlignmentUtils::ReadsAlignmentUtilsClient;
+use DataFileUtil::DataFileUtilClient;
 
 use KBaseReport::KBaseReportClient;
 use Workspace::WorkspaceClient;
@@ -298,6 +299,8 @@ sub create_report_for_single_run {
   #);
   #my $qc_result_zip_info = $qualimap_report->{qc_result_zip_info};
 
+  my $dfu=DataFileUtil::DataFileUtilClient->new($self->{callback_url});
+
   # create report
   my $report_text = "Ran on a single reads library.\n\n";
   my $alignment_info = $self->get_obj_info($run_output_info->{upload_results}{obj_ref});
@@ -305,6 +308,7 @@ sub create_report_for_single_run {
   $report_text .= "                        " . $run_output_info->{upload_results}{obj_ref} . "\n";
   system("cd $run_output_info->{output_dir} && bismark2report");
   my $html=`cat $run_output_info->{output_dir}/$validated_params->{output_alignment_name}_*_report.html`;
+  $html=~ s#<html>(.*)</html>#$1#m;
 
   my $kbr = KBaseReport::KBaseReportClient->new($self->{callback_url});
   my $report_info = $kbr->create_extended_report({
@@ -315,8 +319,9 @@ sub create_report_for_single_run {
         }
       ],
       report_object_name => 'kb_Bismark_' . time(),
-      #direct_html => $html,
-      #direct_html_link_index => undef,
+      direct_html => $html,
+      direct_html_link_index => undef,
+      html_links => [],
       #html_links => [{
       #    shock_id => $qc_result_zip_info->{shock_id},
       #    name => $qc_result_zip_info->{index_html_file_name},
@@ -328,7 +333,6 @@ sub create_report_for_single_run {
   );
 
   $report_info;
-  #+{report_name => $report_info->{name}, report_ref => $report_info->{ref}};
 }
 
 sub process_batch_result {
