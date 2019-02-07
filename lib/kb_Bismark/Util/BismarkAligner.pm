@@ -306,9 +306,27 @@ sub create_report_for_single_run {
   my $alignment_info = $self->get_obj_info($run_output_info->{upload_results}{obj_ref});
   $report_text .= "Created ReadsAlignment: " . $alignment_info->[1] . "\n";
   $report_text .= "                        " . $run_output_info->{upload_results}{obj_ref} . "\n";
-  system("cd $run_output_info->{output_dir} && bismark2report");
-  my $html=`cat $run_output_info->{output_dir}/$validated_params->{output_alignment_name}_*_report.html`;
-  $html=~ s#<html>(.*)</html>#$1#m;
+  my $html_folder=File::Spec->catfile($run_output_info->{output_dir}, 'html');
+  mkdir $html_folder;
+  system("cd $run_output_info->{output_dir} && bismark2report && mv $run_output_info->{output_dir}/$validated_params->{output_alignment_name}_*_report.html $html_folder");
+  my $fh;
+  open $fh, ">", "$html_folder/index.html" or die "can't open $html_folder/index.html: $!";
+  print $fh '<html style="height: 100%;"><body style="margin: 0; padding: 0; height: 100%; box-sizing: border-box;"><div id="body">my report</div></body></html>';
+  close $fh;
+
+  my $shock = $dfu->file_to_shock({
+      file_path => $html_folder,
+      make_handle => 0,
+      pack => 'zip'
+    }
+  );
+
+  my $output_html_files=[{
+      shock_id => $shock->{shock_id},
+      name => 'index.html',
+      label => 'html files',
+      description => 'HTML files',
+    }];
 
   my $kbr = KBaseReport::KBaseReportClient->new($self->{callback_url});
   my $report_info = $kbr->create_extended_report({
@@ -319,9 +337,10 @@ sub create_report_for_single_run {
         }
       ],
       report_object_name => 'kb_Bismark_' . time(),
-      direct_html => $html,
-      direct_html_link_index => undef,
-      html_links => [],
+      #direct_html => $html,
+      #direct_html_link_index => undef,
+      direct_html_link_index => 0,
+      html_links => $output_html_files,
       #html_links => [{
       #    shock_id => $qc_result_zip_info->{shock_id},
       #    name => $qc_result_zip_info->{index_html_file_name},
