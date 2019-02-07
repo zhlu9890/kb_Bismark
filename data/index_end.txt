@@ -1,0 +1,20 @@
+    </div>
+    <script> 
+        // Set height of the iframe based on the space available in this viewport
+        function setHeight() {
+            //var menu = document.getElementById('menu');
+            //var menuHeight = menu.getBoundingClientRect().height;
+            var viewportHeight = document.body.getBoundingClientRect().height;
+            //var availableHeight = viewportHeight - menuHeight;
+            var availableHeight = viewportHeight;
+            var body = document.getElementById('body');
+            var content = document.getElementById('content');
+            content.style.height = (availableHeight) + 'px';
+        }
+        window.addEventListener('resize', function () {
+            setHeight();
+        });
+        setHeight();
+    </script>
+</body>
+</html>
