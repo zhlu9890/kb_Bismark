@@ -4,7 +4,7 @@ use strict;
 use Bio::KBase::Exceptions;
 use kb_Bismark::Util::BismarkRunner;
 use Workspace::WorkspaceClient;
-use GenomeAnnotationAPI::GenomeAnnotationAPIServiceClient;
+use GenomeAnnotationAPI::GenomeAnnotationAPIClient;
 use DataFileUtil::DataFileUtilClient;
 use AssemblyUtil::AssemblyUtilClient;
 use Try::Tiny;
@@ -95,7 +95,7 @@ sub get_assembly_info {
 
   if ($obj_type=~/^KBaseGenomes\.Genome/) {
     # we need to get the assembly for this genome
-    my $ga = GenomeAnnotationAPI::GenomeAnnotationAPIServiceClient->new($self->{srv_wiz_url});
+    my $ga = GenomeAnnotationAPI::GenomeAnnotationAPIClient->new($self->{srv_wiz_url});
     my $assembly_ref = $ga->get_assembly({ref => $ref});
     # using the path ensures we can access the assembly even if we don't have direct access
     my $ref_path = $ref . ';' . $assembly_ref;
