@@ -309,9 +309,11 @@ sub create_report_for_single_run {
   my $html_folder=File::Spec->catfile($run_output_info->{output_dir}, 'html');
   mkdir $html_folder;
   system("cd $run_output_info->{output_dir} && bismark2report && mv $run_output_info->{output_dir}/$validated_params->{output_alignment_name}_*_report.html $html_folder");
+  my ($source_name)=`ls $html_folder`;
+  chomp $source_name;
   my $fh;
   open $fh, ">", "$html_folder/index.html" or die "can't open $html_folder/index.html: $!";
-  print $fh '<html style="height: 100%;"><body style="margin: 0; padding: 0; height: 100%; box-sizing: border-box;"><div id="body">my report</div></body></html>';
+  print $fh '<html style="height: 100%;"><body style="margin: 0; padding: 0; height: 100%; box-sizing: border-box;"><div id="body"><iframe id="content" style="width: 100%; border: none; " src="' . $source_name . '"></iframe></div></body></html>';
   close $fh;
 
   my $shock = $dfu->file_to_shock({
