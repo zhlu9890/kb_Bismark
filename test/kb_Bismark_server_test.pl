@@ -7,6 +7,7 @@ use Time::HiRes qw(time);
 use Bio::KBase::AuthToken;
 use Workspace::WorkspaceClient;
 use AssemblyUtil::AssemblyUtilClient;
+use installed_clients::GenomeFileUtilClient;
 use ReadsUtils::ReadsUtilsClient;
 use kb_Bismark::kb_BismarkImpl;
 
@@ -48,6 +49,21 @@ sub loadAssembly {
       assembly_name => 'test_assembly'
     }
   );
+}
+
+sub loadGenome {
+  my $genbank_file_path=File::Spec->catfile($scratch, 'minimal.gbff');
+  copy(File::Spec->catfile('data', 'minimal.gbff'), $genbank_file_path);
+  my $gfu=installed_clients::GenomeFileUtilClient->new($callback_url);
+  my $genome_ref=$gfu->genbank_to_genome({
+      file => {path => $genbank_file_path},
+      workspace_name => get_ws_name(),
+      genome_name => 'test_genome',
+      source => 'Ensembl',
+      generate_ids_if_needed => 1,
+      generate_missing_genes => 1
+    }
+  )->{genome_ref};
 }
 
 sub loadSingleEndReads {
@@ -96,7 +112,16 @@ eval {
   isa_ok($impl, 'kb_Bismark::kb_BismarkImpl');
   diag explain $impl;
   can_ok($impl, qw/genome_preparation bismark methylation_extractor bismark_app run_bismark_cli/);
-  my ($assembly_ref, $se_lib_ref, $pe_lib_ref, $params, $res);
+  my ($genome_ref, $assembly_ref, $se_lib_ref, $pe_lib_ref, $params, $res);
+
+  lives_ok {
+    $genome_ref ||= loadGenome();
+    $res=$impl->genome_preparation({ref => $genome_ref});
+  }, 'genome_preparation'; 
+  diag explain $res;
+  cmp_ok($res->{from_cache}, '==', 0);
+  cmp_ok($res->{pushed_to_cache}, '==', 0);
+  cmp_ok($res->{index_files_basename}, 'eq', 'test_genome_assembly');
 
   lives_ok {
     $assembly_ref ||= loadAssembly();
