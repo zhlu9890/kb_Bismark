@@ -19,12 +19,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("com.googlecode.jsonschema2pojo")
 @JsonPropertyOrder({
-    "alignment_ref"
+    "alignment_ref",
+    "assembly_or_genome_ref",
+    "output_workspace"
 })
 public class ExtractorParams {
 
     @JsonProperty("alignment_ref")
     private String alignmentRef;
+    @JsonProperty("assembly_or_genome_ref")
+    private String assemblyOrGenomeRef;
+    @JsonProperty("output_workspace")
+    private String outputWorkspace;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("alignment_ref")
@@ -42,6 +48,36 @@ public class ExtractorParams {
         return this;
     }
 
+    @JsonProperty("assembly_or_genome_ref")
+    public String getAssemblyOrGenomeRef() {
+        return assemblyOrGenomeRef;
+    }
+
+    @JsonProperty("assembly_or_genome_ref")
+    public void setAssemblyOrGenomeRef(String assemblyOrGenomeRef) {
+        this.assemblyOrGenomeRef = assemblyOrGenomeRef;
+    }
+
+    public ExtractorParams withAssemblyOrGenomeRef(String assemblyOrGenomeRef) {
+        this.assemblyOrGenomeRef = assemblyOrGenomeRef;
+        return this;
+    }
+
+    @JsonProperty("output_workspace")
+    public String getOutputWorkspace() {
+        return outputWorkspace;
+    }
+
+    @JsonProperty("output_workspace")
+    public void setOutputWorkspace(String outputWorkspace) {
+        this.outputWorkspace = outputWorkspace;
+    }
+
+    public ExtractorParams withOutputWorkspace(String outputWorkspace) {
+        this.outputWorkspace = outputWorkspace;
+        return this;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -54,7 +90,7 @@ public class ExtractorParams {
 
     @Override
     public String toString() {
-        return ((((("ExtractorParams"+" [alignmentRef=")+ alignmentRef)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((("ExtractorParams"+" [alignmentRef=")+ alignmentRef)+", assemblyOrGenomeRef=")+ assemblyOrGenomeRef)+", outputWorkspace=")+ outputWorkspace)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

@@ -333,7 +333,12 @@ $params is a kb_Bismark.extractorParams
 $result is a kb_Bismark.extractorResult
 extractorParams is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 extractorResult is a reference to a hash where the following keys are defined:
+	result_directory has a value which is a string
+	bedgraph_ref has a value which is a string
+	report_name has a value which is a string
 	report_ref has a value which is a string
 
 </pre>
@@ -346,7 +351,12 @@ $params is a kb_Bismark.extractorParams
 $result is a kb_Bismark.extractorResult
 extractorParams is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 extractorResult is a reference to a hash where the following keys are defined:
+	result_directory has a value which is a string
+	bedgraph_ref has a value which is a string
+	report_name has a value which is a string
 	report_ref has a value which is a string
 
 
@@ -964,6 +974,8 @@ report_ref has a value which is a string
 <pre>
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 
 </pre>
 
@@ -973,6 +985,8 @@ alignment_ref has a value which is a string
 
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 
 
 =end text
@@ -993,6 +1007,9 @@ alignment_ref has a value which is a string
 
 <pre>
 a reference to a hash where the following keys are defined:
+result_directory has a value which is a string
+bedgraph_ref has a value which is a string
+report_name has a value which is a string
 report_ref has a value which is a string
 
 </pre>
@@ -1002,6 +1019,9 @@ report_ref has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
+result_directory has a value which is a string
+bedgraph_ref has a value which is a string
+report_name has a value which is a string
 report_ref has a value which is a string
 
 

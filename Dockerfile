@@ -22,7 +22,7 @@ RUN conda config --add channels bioconda \
   && conda install -y bismark=0.20.0
 
 # download an inifile reader
-RUN cpanm -i Config::IniFiles
+RUN cpanm -i Config::IniFiles 
 
 # -----------------------------------------
 

@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org 
 our $VERSION = '0.0.1';
 our $GIT_URL = 'git@github.com:zhlu9890/kb_Bismark.git';
-our $GIT_COMMIT_HASH = 'd383e62b0e5c341eef61bc9d220f150964ee642f';
+our $GIT_COMMIT_HASH = '981b57849f4c97842ce57d41e4dbc13567ec3c0a';
 
 =head1 NAME
 
@@ -263,7 +263,12 @@ $params is a kb_Bismark.extractorParams
 $result is a kb_Bismark.extractorResult
 extractorParams is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 extractorResult is a reference to a hash where the following keys are defined:
+	result_directory has a value which is a string
+	bedgraph_ref has a value which is a string
+	report_name has a value which is a string
 	report_ref has a value which is a string
 
 </pre>
@@ -276,7 +281,12 @@ $params is a kb_Bismark.extractorParams
 $result is a kb_Bismark.extractorResult
 extractorParams is a reference to a hash where the following keys are defined:
 	alignment_ref has a value which is a string
+	assembly_or_genome_ref has a value which is a string
+	output_workspace has a value which is a string
 extractorResult is a reference to a hash where the following keys are defined:
+	result_directory has a value which is a string
+	bedgraph_ref has a value which is a string
+	report_name has a value which is a string
 	report_ref has a value which is a string
 
 
@@ -808,6 +818,8 @@ report_ref has a value which is a string
 <pre>
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 
 </pre>
 
@@ -817,6 +829,8 @@ alignment_ref has a value which is a string
 
 a reference to a hash where the following keys are defined:
 alignment_ref has a value which is a string
+assembly_or_genome_ref has a value which is a string
+output_workspace has a value which is a string
 
 
 =end text
@@ -837,6 +851,9 @@ alignment_ref has a value which is a string
 
 <pre>
 a reference to a hash where the following keys are defined:
+result_directory has a value which is a string
+bedgraph_ref has a value which is a string
+report_name has a value which is a string
 report_ref has a value which is a string
 
 </pre>
@@ -846,6 +863,9 @@ report_ref has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
+result_directory has a value which is a string
+bedgraph_ref has a value which is a string
+report_name has a value which is a string
 report_ref has a value which is a string
 
 

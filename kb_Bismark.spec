@@ -62,9 +62,15 @@ module kb_Bismark {
 
     typedef structure {
         string alignment_ref;
+        string assembly_or_genome_ref;
+
+        string output_workspace;
     } extractorParams;
 
     typedef structure {
+        string result_directory;
+        string bedgraph_ref;
+        string report_name;
         string report_ref;
     } extractorResult;
 

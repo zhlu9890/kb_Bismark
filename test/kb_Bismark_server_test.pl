@@ -115,24 +115,6 @@ eval {
   my ($genome_ref, $assembly_ref, $se_lib_ref, $pe_lib_ref, $params, $res);
 
   lives_ok {
-    $genome_ref ||= loadGenome();
-    $res=$impl->genome_preparation({ref => $genome_ref});
-  }, 'genome_preparation'; 
-  diag explain $res;
-  cmp_ok($res->{from_cache}, '==', 0);
-  cmp_ok($res->{pushed_to_cache}, '==', 0);
-  cmp_ok($res->{index_files_basename}, 'eq', 'test_genome_assembly');
-
-  lives_ok {
-    $assembly_ref ||= loadAssembly();
-    $res=$impl->genome_preparation({ref => $assembly_ref});
-  }, 'genome_preparation'; 
-  diag explain $res;
-  cmp_ok($res->{from_cache}, '==', 0);
-  cmp_ok($res->{pushed_to_cache}, '==', 0);
-  cmp_ok($res->{index_files_basename}, 'eq', 'test_assembly');
-
-  lives_ok {
     $assembly_ref ||= loadAssembly();
     $res=$impl->genome_preparation({ref => $assembly_ref, ws_for_cache => get_ws_name()});
   }, 'genome_preparation, save to ws_for_cache';
@@ -160,18 +142,6 @@ eval {
     };
     $res = $impl->bismark_app($params);
   }, 'bismark, runnig single end reads';
-  diag explain $res;
-
-  lives_ok {
-    $assembly_ref ||= loadAssembly();
-    $pe_lib_ref ||= loadPairedEndReads();
-    $params={
-      input_ref => $pe_lib_ref,
-      assembly_or_genome_ref => $assembly_ref,
-      output_workspace => get_ws_name(),
-    };
-    $res = $impl->bismark_app($params);
-  }, 'bismark, runnig paired end reads';
   diag explain $res;
 
   done_testing();

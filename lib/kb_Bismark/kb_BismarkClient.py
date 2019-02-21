@@ -67,9 +67,12 @@ class kb_Bismark(object):
     def methylation_extractor(self, params, context=None):
         """
         :param params: instance of type "extractorParams" -> structure:
-           parameter "alignment_ref" of String
+           parameter "alignment_ref" of String, parameter
+           "assembly_or_genome_ref" of String, parameter "output_workspace"
+           of String
         :returns: instance of type "extractorResult" -> structure: parameter
-           "report_ref" of String
+           "result_directory" of String, parameter "bedgraph_ref" of String,
+           parameter "report_name" of String, parameter "report_ref" of String
         """
         return self._client.call_method(
             'kb_Bismark.methylation_extractor',
