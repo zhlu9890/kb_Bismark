@@ -3,8 +3,10 @@ use strict;
 
 use kb_Bismark::Util::BismarkRunner;
 
+use Cwd;
 use File::Spec;
-use Archive::Zip qw( :ERROR_CODES );
+use File::Basename;
+use Archive::Zip qw( :ERROR_CODES :CONSTANTS );
 use Data::Dumper;
 $Data::Dumper::Terse = 1;
 
@@ -29,23 +31,22 @@ sub extract {
 
   $self->{bismark_runner}->run('bismark_methylation_extractor', $options);
 
-  my $extractor_output_dir=File::Spec->catfile($run_output_info->{output_dir}, $validated_params->{output_alignment_name});
-  my $zip_file=$extractor_output_dir . ".zip";
+  my $zip_file=File::Spec->catfile($run_output_info->{output_dir}, $validated_params->{output_alignment_name}. ".zip");
   $extractor_output_info->{output_file}=[{
       path => $zip_file,
-      name => $validated_params->{output_alignment_name},
-      label => $validated_params->{output_alignment_name},
+      name => basename($zip_file),
+      label => basename($zip_file),
       description => "Methylation files extracted from Bismark bam output"
     }
   ];
 
-  mkdir $extractor_output_dir;
+  my $cwd=cwd();
+  chdir $run_output_info->{output_dir};
 
-  system("cp $run_output_info->{output_dir}/*.gz $extractor_output_dir");
-  my $zip = Archive::Zip->new();
-  unless ( $zip->writeToFileNamed($zip_file) == AZ_OK ) {
-    die 'zip write error';
-  }
+  my @output_files=glob("*.gz");
+  system("zip $zip_file @output_files") == 0 or die "Unable to create zip file";
+
+  chdir $cwd;
 
   $extractor_output_info;
 }

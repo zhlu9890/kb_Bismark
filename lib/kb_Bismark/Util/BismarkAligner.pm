@@ -374,7 +374,6 @@ sub create_report_for_single_run {
     #],
     workspace_name => $validated_params->{output_workspace}
   };
-  print "AA1" . Dumper($report_params);
   my $report_info = $kbr->create_extended_report($report_params);
 
   $report_info;
